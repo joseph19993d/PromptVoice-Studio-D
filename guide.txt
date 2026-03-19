@@ -1,0 +1,229 @@
+agrega un documento o algo visual que la persona pueda darle en el boton de pasos para configurar y le salga todo lo de dodne ir que configurar etc
+
+Perfecto 🔥 — esto es CLAVE para tu producto:
+vas a crear un “Setup Assistant” (guía interactiva dentro de la app).
+
+Te dejo TODO listo: contenido + estructura + UI + ejemplo de implementación.
+
+🧠 🎯 Concepto
+
+Un botón:
+
+[ ⚙️ Setup Guide ]
+
+Que abre un wizard paso a paso tipo onboarding.
+
+💥 Esto elimina fricción y hace que tu app se sienta profesional.
+
+🎨 1. UX del botón
+
+Ubicación recomendada:
+
+esquina superior derecha
+
+o dentro de Settings
+
+---------------------------------
+| PromptVoice Studio     ⚙️ Guide |
+---------------------------------
+🧩 2. Estructura del Setup Guide
+Paso a paso (wizard)
+1. Welcome
+2. Choose Mode
+3. Connect AI
+4. Connect Voice
+5. Test Everything
+📝 3. CONTENIDO LISTO (puedes copiar tal cual)
+🟢 STEP 1 — Welcome
+🎙️ Welcome to PromptVoice Studio
+
+This app lets you:
+• Generate text using AI
+• Convert it into realistic voice
+• Speak instead of typing
+
+You can use it immediately with free defaults,
+or connect your own providers for better quality.
+
+[ Start Setup ]
+[ Skip (Use Free Mode) ]
+🟡 STEP 2 — Choose Mode
+⚙️ Choose how you want to use the app
+
+🟢 Free Mode (Recommended)
+✔ No setup required
+✔ Works offline (basic quality)
+
+🔵 Connected Mode
+✔ Better AI responses
+✔ High-quality voices
+✔ Requires API keys
+
+[ Use Free Mode ]
+[ Connect Providers ]
+🧠 STEP 3 — Connect AI
+🧠 Connect an AI Provider (Optional)
+
+This allows you to generate better text.
+
+Recommended:
+👉 OpenRouter (free tier available)
+
+Steps:
+1. Go to: https://openrouter.ai
+2. Create an account
+3. Generate an API Key
+4. Paste it below
+
+API Key:
+[________________________]
+
+[ Save & Continue ]
+[ Skip ]
+🔊 STEP 4 — Connect Voice (TTS)
+🔊 Connect a Voice Provider (Optional)
+
+Recommended:
+👉 ElevenLabs (best quality voices)
+
+Steps:
+1. Go to: https://elevenlabs.io
+2. Sign up
+3. Copy your API Key
+4. Paste it below
+
+API Key:
+[________________________]
+
+Voice:
+[ Rachel ▼ ]
+
+[ Save & Continue ]
+[ Skip ]
+🎤 STEP 5 — Microphone Setup
+🎤 Enable Voice Input
+
+You can speak instead of typing.
+
+Steps:
+1. Click "Allow Microphone"
+2. Test recording
+
+[ 🎤 Test Microphone ]
+
+✔ You should see text appear after speaking
+
+[ Continue ]
+🚀 STEP 6 — Test Everything
+🚀 You're Ready!
+
+Try this:
+
+1. Click the 🎤 button
+2. Say something like:
+   "Create a motivational quote"
+3. Press Generate
+
+✔ You should hear the result
+
+[ Go to App ]
+🎨 4. UI diseño (simple)
+Modal / pantalla
+---------------------------------
+| Step 2/6                      |
+|-------------------------------|
+| Title                         |
+| Description                   |
+|                               |
+| Inputs / botones              |
+|                               |
+| [ Back ]       [ Next ]       |
+---------------------------------
+⚙️ 5. Implementación base (React)
+📄 SetupGuide.tsx
+import { useState } from "react";
+
+const steps = [
+  { title: "Welcome", content: "Welcome to PromptVoice Studio" },
+  { title: "Mode", content: "Choose your mode" },
+  { title: "AI", content: "Connect AI" },
+  { title: "TTS", content: "Connect Voice" },
+  { title: "Mic", content: "Setup microphone" },
+  { title: "Done", content: "You're ready!" },
+];
+
+export default function SetupGuide() {
+  const [step, setStep] = useState(0);
+
+  return (
+    <div style={{ padding: 20, border: "1px solid #ccc" }}>
+      <h2>{steps[step].title}</h2>
+      <p>{steps[step].content}</p>
+
+      <div style={{ marginTop: 20 }}>
+        {step > 0 && (
+          <button onClick={() => setStep(step - 1)}>Back</button>
+        )}
+
+        {step < steps.length - 1 ? (
+          <button onClick={() => setStep(step + 1)}>
+            Next
+          </button>
+        ) : (
+          <button onClick={() => alert("Done!")}>
+            Finish
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+🔘 6. Botón para abrirlo
+
+En tu App.tsx:
+
+const [showGuide, setShowGuide] = useState(false);
+
+<button onClick={() => setShowGuide(true)}>
+  ⚙️ Setup Guide
+</button>
+
+{showGuide && <SetupGuide />}
+💡 7. Nivel PRO (recomendado después)
+
+Cuando escales:
+
+✅ Guardar progreso del setup
+
+✅ Detectar si ya configuró APIs
+
+✅ Auto-skip pasos completados
+
+✅ Tooltips en la UI (tipo VS Code)
+
+🔥 8. Detalle que hace la diferencia
+
+Agrega esto:
+
+✔ Status:
+
+AI: Connected / Not Connected
+Voice: Connected / Not Connected
+Mic: Ready
+
+💥 El usuario entiende todo sin pensar
+
+🚀 Resultado final
+
+Con esto tu app pasa de:
+
+❌ herramienta técnica
+a
+✅ producto listo para usuarios reales
+
+🧭 Siguiente paso
+
+Si quieres, puedo hacerte:
+
+👉 UI completa estilo moderna (tipo Notion)
+👉 guardar config real (JSON + persistencia)

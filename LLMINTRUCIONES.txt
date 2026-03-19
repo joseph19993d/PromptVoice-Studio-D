@@ -1,0 +1,207 @@
+starter code REAL listo para correr (Electron + React + voz + IA base).
+Está simplificado pero funcional y escalable.
+
+🚀 1. Crear el proyecto
+npm create vite@latest promptvoice-studio -- --template react-ts
+cd promptvoice-studio
+npm install
+📦 2. Instalar dependencias
+npm install electron concurrently wait-on cross-env
+🧱 3. Estructura mínima
+promptvoice-studio/
+├── electron/
+│   ├── main.ts
+│   └── preload.ts
+│
+├── src/
+│   ├── App.tsx
+│   ├── main.tsx
+│   └── hooks/useRecorder.ts
+│
+├── package.json
+└── vite.config.ts
+⚙️ 4. Configurar Electron
+📄 electron/main.ts
+import { app, BrowserWindow, ipcMain } from "electron";
+import path from "path";
+
+let win: BrowserWindow;
+
+function createWindow() {
+  win = new BrowserWindow({
+    width: 1000,
+    height: 700,
+    webPreferences: {
+      preload: path.join(__dirname, "preload.js"),
+    },
+  });
+
+  win.loadURL("http://localhost:5173");
+}
+
+app.whenReady().then(createWindow);
+
+// 🔥 AI (mock básico)
+ipcMain.handle("ai:generate", async (_, prompt: string) => {
+  return `Generated text based on: ${prompt}`;
+});
+
+// 🔊 TTS (mock)
+ipcMain.handle("tts:generate", async (_, text: string) => {
+  return text;
+});
+
+// 🎤 STT (mock)
+ipcMain.handle("stt:transcribe", async (_, audio) => {
+  return "Transcribed voice text (mock)";
+});
+📄 electron/preload.ts
+import { contextBridge, ipcRenderer } from "electron";
+
+contextBridge.exposeInMainWorld("api", {
+  generateText: (prompt: string) =>
+    ipcRenderer.invoke("ai:generate", prompt),
+
+  generateAudio: (text: string) =>
+    ipcRenderer.invoke("tts:generate", text),
+
+  transcribe: (audio: Blob) =>
+    ipcRenderer.invoke("stt:transcribe", audio),
+});
+🎤 5. Hook de grabación de voz
+📄 src/hooks/useRecorder.ts
+import { useRef, useState } from "react";
+
+export function useRecorder() {
+  const [recording, setRecording] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+
+  const start = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const recorder = new MediaRecorder(stream);
+
+    chunks.current = [];
+
+    recorder.ondataavailable = (e) => {
+      chunks.current.push(e.data);
+    };
+
+    recorder.onstop = async () => {
+      const blob = new Blob(chunks.current);
+      const text = await window.api.transcribe(blob);
+      alert("📝 " + text);
+    };
+
+    recorder.start();
+    mediaRecorderRef.current = recorder;
+    setRecording(true);
+  };
+
+  const stop = () => {
+    mediaRecorderRef.current?.stop();
+    setRecording(false);
+  };
+
+  return { start, stop, recording };
+}
+🎨 6. UI básica
+📄 src/App.tsx
+import { useState } from "react";
+import { useRecorder } from "./hooks/useRecorder";
+
+function App() {
+  const [prompt, setPrompt] = useState("");
+  const [result, setResult] = useState("");
+
+  const { start, stop, recording } = useRecorder();
+
+  const handleGenerate = async () => {
+    const text = await window.api.generateText(prompt);
+    setResult(text);
+
+    const audio = await window.api.generateAudio(text);
+    console.log(audio);
+  };
+
+  return (
+    <div style={{ padding: 20 }}>
+      <h1>🎙️ PromptVoice Studio</h1>
+
+      <textarea
+        placeholder="Write or speak your prompt..."
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        style={{ width: "100%", height: 100 }}
+      />
+
+      <div style={{ marginTop: 10 }}>
+        <button onClick={handleGenerate}>
+          ⚡ Generate
+        </button>
+
+        <button
+          onMouseDown={start}
+          onMouseUp={stop}
+          style={{ marginLeft: 10 }}
+        >
+          {recording ? "🎤 Recording..." : "🎤 Hold to Speak"}
+        </button>
+      </div>
+
+      <h3>Result:</h3>
+      <p>{result}</p>
+    </div>
+  );
+}
+
+export default App;
+⚙️ 7. Tipos globales (IMPORTANTE)
+📄 src/vite-env.d.ts
+interface Window {
+  api: {
+    generateText: (prompt: string) => Promise<string>;
+    generateAudio: (text: string) => Promise<any>;
+    transcribe: (audio: Blob) => Promise<string>;
+  };
+}
+📦 8. Scripts en package.json
+{
+  "main": "electron/main.ts",
+  "scripts": {
+    "dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\""
+  }
+}
+▶️ 9. Ejecutar
+npm run dev
+💥 10. Qué tienes ya funcionando
+
+✔ UI de escritorio
+✔ Input de texto
+✔ Botón 🎤 (graba audio real)
+✔ Flujo completo (mock):
+
+voz → texto
+
+prompt → IA
+
+IA → audio
+
+🚀 11. Próximo paso (crítico)
+
+Ahora debes reemplazar mocks por real:
+
+1. AI real
+
+👉 integrar OpenRouter
+
+2. STT real
+
+👉 Whisper API o local
+
+3. TTS real
+
+👉 ElevenLabs o Piper
+
+
+----
