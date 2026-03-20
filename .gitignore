@@ -29,3 +29,6 @@ npm-debug.log*
 # Temp
 tmp/
 temp/
+
+# Piper TTS resources (heavy binaries and models)
+resources/piper/
