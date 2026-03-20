@@ -32,7 +32,7 @@ interface AppState {
   // Config
   config: {
     ai: { provider: string; model: string }
-    tts: { provider: string; voiceId: string }
+    tts: { provider: string; voiceId: string; language: string }
     stt: { provider: string }
     setupCompleted: boolean
   } | null
@@ -78,7 +78,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ result: text, isGenerating: false })
 
       // Save to history
-      window.api.addHistory({ prompt, result: text, provider: 'current' }).catch(() => {})
+      window.api.addHistory({ prompt, result: text, provider: 'current' }).catch(() => { })
     } catch (err) {
       set({
         generateError: (err as Error).message,
@@ -95,11 +95,17 @@ export const useAppStore = create<AppState>((set, get) => ({
   setIsPlayingAudio: (playing) => set({ isPlayingAudio: playing }),
 
   generateAndSpeak: async () => {
-    const { result } = get()
+    const { result, config } = get()
     if (!result.trim()) return
 
     try {
-      const audioData = await window.api.generateAudio(result)
+      const lang = config?.tts?.language
+      const voiceId = config?.tts?.voiceId
+
+      const audioData = await window.api.generateAudio(result, {
+        ...(voiceId && { voiceId }),
+        ...(lang && lang !== 'auto' && { language: lang })
+      })
       set({ audioBase64: audioData })
     } catch (err) {
       console.error('TTS error:', err)

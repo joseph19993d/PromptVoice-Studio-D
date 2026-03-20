@@ -1,7 +1,7 @@
 import { ITTSProvider, TTSOptions, VoiceInfo } from '../../types'
 
 interface ElevenLabsVoicesResponse {
-  voices?: Array<{ voice_id: string; name: string }>
+  voices?: Array<{ voice_id: string; name: string; category?: string }>
 }
 
 export class ElevenLabsProvider implements ITTSProvider {
@@ -13,7 +13,7 @@ export class ElevenLabsProvider implements ITTSProvider {
   }
 
   async generateAudio(text: string, options?: TTSOptions): Promise<Buffer> {
-    const voiceId = options?.voiceId || '21m00Tcm4TlvDq8ikWAM' // Rachel default
+    const voiceId = (options?.voiceId && options.voiceId !== 'default') ? options.voiceId : '21m00Tcm4TlvDq8ikWAM' // Rachel default
 
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}`,
@@ -26,7 +26,8 @@ export class ElevenLabsProvider implements ITTSProvider {
         },
         body: JSON.stringify({
           text,
-          model_id: 'eleven_monolingual_v1',
+          model_id: 'eleven_multilingual_v2',
+          ...(options?.language && { language_code: options.language }),
           voice_settings: {
             stability: 0.5,
             similarity_boost: 0.75,
@@ -54,7 +55,8 @@ export class ElevenLabsProvider implements ITTSProvider {
       return (
         data.voices?.map((v) => ({
           id: v.voice_id,
-          name: v.name
+          name: v.name,
+          category: v.category
         })) || this.defaultVoices()
       )
     } catch {
@@ -64,12 +66,12 @@ export class ElevenLabsProvider implements ITTSProvider {
 
   private defaultVoices(): VoiceInfo[] {
     return [
-      { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel' },
-      { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi' },
-      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella' },
-      { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni' },
-      { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli' },
-      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh' }
+      { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', category: 'premade' },
+      { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', category: 'premade' },
+      { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', category: 'premade' },
+      { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', category: 'premade' },
+      { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', category: 'premade' },
+      { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', category: 'premade' }
     ]
   }
 }

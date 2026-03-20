@@ -12,7 +12,16 @@ export default function SettingsPage() {
   const [aiMaxTokens, setAiMaxTokens] = useState('1024')
 
   const [ttsProvider, setTtsProvider] = useState('mock')
-  const [ttsVoiceId, setTtsVoiceId] = useState('default')
+  const [ttsVoiceId, setTtsVoiceId] = useState('21m00Tcm4TlvDq8ikWAM')
+  const [ttsLanguage, setTtsLanguage] = useState('auto')
+  const [elevenlabsVoices, setElevenlabsVoices] = useState<Array<{id: string, name: string, category?: string}>>([
+    { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', category: 'premade' },
+    { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', category: 'premade' },
+    { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', category: 'premade' },
+    { id: 'ErXwobaYiN019PkySvjV', name: 'Antoni', category: 'premade' },
+    { id: 'MF3mGyEYCl7XYWbV9V6O', name: 'Elli', category: 'premade' },
+    { id: 'TxGEqnHWrfWFTfGW9XjX', name: 'Josh', category: 'premade' }
+  ])
 
   const [sttProvider, setSttProvider] = useState('mock')
 
@@ -35,11 +44,23 @@ export default function SettingsPage() {
         setAiMaxTokens(String(config.providers.ai.maxTokens))
         setTtsProvider(config.providers.tts.provider)
         setTtsVoiceId(config.providers.tts.voiceId)
+        setTtsLanguage(config.providers.tts.language || 'auto')
         setSttProvider(config.providers.stt.provider)
         setOpenrouterKey(config.keys.openrouter || '')
         setElevenlabsKey(config.keys.elevenlabs || '')
         setWhisperKey(config.keys.whisper || '')
         setOllamaUrl(config.keys.ollama_url || 'http://localhost:11434')
+
+        if (config.providers.tts.provider === 'elevenlabs' && config.keys.elevenlabs) {
+          try {
+            const voices = await window.api.getVoices()
+            if (voices && voices.length > 0) {
+              setElevenlabsVoices(voices)
+            }
+          } catch (e) {
+            console.error('Failed to load ElevenLabs voices:', e)
+          }
+        }
       } catch (err) {
         console.error('Failed to load config:', err)
       }
@@ -61,7 +82,8 @@ export default function SettingsPage() {
           tts: {
             provider: ttsProvider as 'elevenlabs' | 'webspeech' | 'mock',
             voiceId: ttsVoiceId,
-            speed: 1.0
+            speed: 1.0,
+            language: ttsLanguage
           },
           stt: {
             provider: sttProvider as 'whisper' | 'webspeech' | 'mock',
@@ -233,16 +255,47 @@ export default function SettingsPage() {
             <div className="settings-field">
               <label className="settings-label">Voice</label>
               <select
+                id="tts-voice-id-select"
                 className="settings-select"
                 value={ttsVoiceId}
                 onChange={(e) => setTtsVoiceId(e.target.value)}
               >
-                <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
-                <option value="AZnzlk1XvdvUeBnXmlld">Domi</option>
-                <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
-                <option value="ErXwobaYiN019PkySvjV">Antoni</option>
-                <option value="MF3mGyEYCl7XYWbV9V6O">Elli</option>
-                <option value="TxGEqnHWrfWFTfGW9XjX">Josh</option>
+                {elevenlabsVoices.filter(v => v.category === 'cloned').length > 0 && (
+                  <optgroup label="Your Voices (Cloned)">
+                    {elevenlabsVoices.filter(v => v.category === 'cloned').map(v => (
+                      <option key={v.id} value={v.id}>{v.name} (cloned) ✅</option>
+                    ))}
+                  </optgroup>
+                )}
+                <optgroup label="Default Voices (Premade)">
+                  {elevenlabsVoices.filter(v => v.category !== 'cloned').map(v => (
+                    <option key={v.id} value={v.id}>
+                      {v.name} {v.category === 'premade' ? '(locked) 🔒' : ''}
+                    </option>
+                  ))}
+                </optgroup>
+              </select>
+            </div>
+            <div className="settings-field">
+              <label className="settings-label">Language</label>
+              <select
+                className="settings-select"
+                value={ttsLanguage}
+                onChange={(e) => setTtsLanguage(e.target.value)}
+              >
+                <option value="auto">Auto-detect</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+                <option value="fr">Français</option>
+                <option value="de">Deutsch</option>
+                <option value="pt">Português</option>
+                <option value="it">Italiano</option>
+                <option value="ja">日本語</option>
+                <option value="ko">한국어</option>
+                <option value="zh">中文</option>
+                <option value="ar">العربية</option>
+                <option value="hi">हिन्दी</option>
+                <option value="pl">Polski</option>
               </select>
             </div>
           </>
@@ -296,7 +349,7 @@ export default function SettingsPage() {
               window.api.setConfig({
                 providers: {
                   ai: { provider: 'mock', model: 'mistralai/mistral-small-3.1-24b-instruct', systemPrompt: 'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.', temperature: 0.7, maxTokens: 1024 },
-                  tts: { provider: 'mock', voiceId: 'default', speed: 1.0 },
+                  tts: { provider: 'mock', voiceId: '21m00Tcm4TlvDq8ikWAM', speed: 1.0, language: 'auto' },
                   stt: { provider: 'mock', language: 'en' }
                 },
                 keys: {},

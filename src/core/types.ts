@@ -34,6 +34,7 @@ export interface TTSOptions {
   voiceId?: string
   speed?: number
   pitch?: number
+  language?: string
 }
 
 export interface STTOptions {
@@ -45,6 +46,7 @@ export interface STTOptions {
 export interface VoiceInfo {
   id: string
   name: string
+  category?: string
   language?: string
   preview_url?: string
 }
@@ -77,6 +79,7 @@ export interface ProviderConfig {
     provider: TTSProviderType
     voiceId: string
     speed: number
+    language: string
   }
   stt: {
     provider: STTProviderType
@@ -114,8 +117,9 @@ export const DEFAULT_CONFIG: AppConfig = {
     },
     tts: {
       provider: 'mock',
-      voiceId: 'default',
-      speed: 1.0
+      voiceId: '21m00Tcm4TlvDq8ikWAM',
+      speed: 1.0,
+      language: 'auto'
     },
     stt: {
       provider: 'mock',

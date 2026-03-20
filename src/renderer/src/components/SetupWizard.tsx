@@ -58,7 +58,8 @@ export default function SetupWizard() {
             tts: {
               provider: ttsKey ? 'elevenlabs' : 'mock',
               voiceId: '21m00Tcm4TlvDq8ikWAM',
-              speed: 1.0
+              speed: 1.0,
+              language: 'auto'
             },
             stt: {
               provider: 'mock',
