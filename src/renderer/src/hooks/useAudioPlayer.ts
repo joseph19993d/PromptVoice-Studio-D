@@ -11,19 +11,31 @@ export function useAudioPlayer() {
     return () => {
       if (audioRef.current) {
         audioRef.current.pause()
-        URL.revokeObjectURL(audioRef.current.src)
       }
     }
   }, [])
 
-  const loadAudio = useCallback((base64Data: string, mimeType = 'audio/mpeg') => {
+  const loadAudio = useCallback((base64Data: string, autoPlay: boolean = false) => {
     // Clean up previous audio
     if (audioRef.current) {
       audioRef.current.pause()
-      URL.revokeObjectURL(audioRef.current.src)
+      // We no longer need revokeObjectURL since we are using data: URIs
     }
 
-    // Convert base64 to blob URL
+    let mimeType = 'audio/mpeg'
+    if (base64Data.startsWith('UklGR')) {
+      mimeType = 'audio/wav'
+    } else if (base64Data.startsWith('T2dnUw')) {
+      mimeType = 'audio/ogg'
+    }
+
+    console.log(`[AudioPlayer] Validating Base64 Stream...
+- MimeDetect: ${mimeType} 
+- HeadBytes: ${base64Data.substring(0, 20)}
+- StreamLen: ${base64Data.length}`)
+
+    // Usar Blob para respetar la Política de Seguridad de Contenido (CSP) de Electron
+    // y evitar los bloqueos "rejected by URL safety check" de los URIs "data:".
     const binaryString = atob(base64Data)
     const bytes = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {
@@ -48,9 +60,17 @@ export function useAudioPlayer() {
       setCurrentTime(0)
     }
 
-    audio.onerror = () => {
-      console.error('Audio playback error')
+    audio.onerror = (e) => {
+      console.error('[AudioPlayer] Audio playback error:', audio.error?.message || e)
       setIsPlaying(false)
+    }
+
+    if (autoPlay) {
+      audio.play()
+        .then(() => setIsPlaying(true))
+        .catch(err => {
+          console.error(`[AudioPlayer] AutoPlay blocked: ${err.message || err.name || 'Unknown Error'}`, err)
+        })
     }
   }, [])
 

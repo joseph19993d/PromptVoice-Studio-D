@@ -1,6 +1,7 @@
 import { ITTSProvider, TTSOptions, TTSProviderType, VoiceInfo } from '../types'
 import { MockTTSProvider } from './providers/mockTTSProvider'
 import { ElevenLabsProvider } from './providers/elevenLabsProvider'
+import { PiperProvider } from './providers/piperProvider'
 
 export class TTSManager {
   private provider: ITTSProvider
@@ -13,6 +14,8 @@ export class TTSManager {
     switch (type) {
       case 'elevenlabs':
         return new ElevenLabsProvider(apiKey || '')
+      case 'piper':
+        return new PiperProvider()
       case 'mock':
       default:
         return new MockTTSProvider()
@@ -28,7 +31,26 @@ export class TTSManager {
   }
 
   async generate(text: string, options?: TTSOptions): Promise<Buffer> {
-    return this.provider.generateAudio(text, options)
+    try {
+      return await this.provider.generateAudio(text, options)
+    } catch (err) {
+      const errorMsg = (err as Error).message
+
+      // Intelligent Fallback Strategy
+      if (
+        this.provider.name === 'elevenlabs' &&
+        (errorMsg.includes('quota_exceeded') || 
+         errorMsg.includes('payment_required') || 
+         errorMsg.includes('402') ||
+         errorMsg.includes('fetch failed'))
+      ) {
+        console.warn('ElevenLabs quota exceeded or unavailable. Falling back to offline Piper Provider...')
+        const fallbackProvider = new PiperProvider()
+        return await fallbackProvider.generateAudio(text)
+      }
+
+      throw err
+    }
   }
 
   async listVoices(): Promise<VoiceInfo[]> {

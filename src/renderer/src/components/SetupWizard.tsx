@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAppStore } from '../store/appStore'
+import { DEFAULT_PIPER_OPTIONS } from '../../../core/types'
 
 const STEPS = [
   {
@@ -59,7 +60,8 @@ export default function SetupWizard() {
               provider: ttsKey ? 'elevenlabs' : 'mock',
               voiceId: '21m00Tcm4TlvDq8ikWAM',
               speed: 1.0,
-              language: 'auto'
+              language: 'auto',
+              piperOptions: DEFAULT_PIPER_OPTIONS
             },
             stt: {
               provider: 'mock',

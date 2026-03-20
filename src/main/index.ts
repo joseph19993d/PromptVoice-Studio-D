@@ -117,9 +117,9 @@ app.whenReady().then(() => {
   initializeManagers(config)
 
   // 2. Register IPC handlers
-  registerAIHandlers(aiManager)
-  registerTTSHandlers(ttsManager)
-  registerSTTHandlers(sttManager)
+  registerAIHandlers(() => aiManager)
+  registerTTSHandlers(() => ttsManager)
+  registerSTTHandlers(() => sttManager)
   registerVaultHandlers((updatedConfig) => {
     initializeManagers(updatedConfig)
   })

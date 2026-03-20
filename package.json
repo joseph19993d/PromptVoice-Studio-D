@@ -7,7 +7,9 @@
   "license": "MIT",
   "homepage": "https://github.com/joseph19993d/PromptVoice-Studio-D",
   "scripts": {
+    "predev": "node scripts/setup-piper.js",
     "dev": "electron-vite dev",
+    "prebuild": "node scripts/setup-piper.js",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
@@ -39,6 +41,13 @@
     "directories": {
       "output": "dist"
     },
+    "extraResources": [
+      {
+        "from": "resources/piper",
+        "to": "piper",
+        "filter": ["**/*"]
+      }
+    ],
     "win": {
       "target": [
         "nsis"

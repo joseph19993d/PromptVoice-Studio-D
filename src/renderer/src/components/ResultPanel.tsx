@@ -1,6 +1,7 @@
 import { Copy, Volume2, Sparkles } from 'lucide-react'
 import { useAppStore } from '../store/appStore'
 import AudioPlayer from './AudioPlayer'
+import FloatingVoiceSettings from './FloatingVoiceSettings'
 
 export default function ResultPanel() {
   const { result, setResult, isGenerating, generateAndSpeak } = useAppStore()
@@ -14,7 +15,10 @@ export default function ResultPanel() {
   return (
     <div className="result-panel">
       <div className="result-header">
-        <h3>✨ Result</h3>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <h3>✨ Result</h3>
+          <FloatingVoiceSettings />
+        </div>
         {result && (
           <div className="result-actions">
             <button

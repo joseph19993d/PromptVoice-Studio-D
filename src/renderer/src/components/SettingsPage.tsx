@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react'
-import { Brain, Volume2, Mic, Save, RotateCcw } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { Brain, Mic, RotateCcw, Save, Volume2 } from 'lucide-react'
+import { DEFAULT_PIPER_OPTIONS, DEFAULT_PIPER_VOICE_ID, PIPER_VOICES } from '../../../core/types'
 import { useAppStore } from '../store/appStore'
 
 export default function SettingsPage() {
@@ -7,14 +8,17 @@ export default function SettingsPage() {
 
   const [aiProvider, setAiProvider] = useState('mock')
   const [aiModel, setAiModel] = useState('mistralai/mistral-small-3.1-24b-instruct')
-  const [aiSystemPrompt, setAiSystemPrompt] = useState('You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.')
+  const [aiSystemPrompt, setAiSystemPrompt] = useState(
+    'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.'
+  )
   const [aiTemperature, setAiTemperature] = useState('0.7')
   const [aiMaxTokens, setAiMaxTokens] = useState('1024')
 
   const [ttsProvider, setTtsProvider] = useState('mock')
   const [ttsVoiceId, setTtsVoiceId] = useState('21m00Tcm4TlvDq8ikWAM')
   const [ttsLanguage, setTtsLanguage] = useState('auto')
-  const [elevenlabsVoices, setElevenlabsVoices] = useState<Array<{id: string, name: string, category?: string}>>([
+  const [piperOptions, setPiperOptions] = useState(DEFAULT_PIPER_OPTIONS)
+  const [elevenlabsVoices, setElevenlabsVoices] = useState<Array<{ id: string; name: string; category?: string }>>([
     { id: '21m00Tcm4TlvDq8ikWAM', name: 'Rachel', category: 'premade' },
     { id: 'AZnzlk1XvdvUeBnXmlld', name: 'Domi', category: 'premade' },
     { id: 'EXAVITQu4vr4xnSDxMaL', name: 'Bella', category: 'premade' },
@@ -32,7 +36,6 @@ export default function SettingsPage() {
 
   const [saveStatus, setSaveStatus] = useState<string | null>(null)
 
-  // Load existing config
   useEffect(() => {
     async function load() {
       try {
@@ -45,6 +48,7 @@ export default function SettingsPage() {
         setTtsProvider(config.providers.tts.provider)
         setTtsVoiceId(config.providers.tts.voiceId)
         setTtsLanguage(config.providers.tts.language || 'auto')
+        setPiperOptions(config.providers.tts.piperOptions || DEFAULT_PIPER_OPTIONS)
         setSttProvider(config.providers.stt.provider)
         setOpenrouterKey(config.keys.openrouter || '')
         setElevenlabsKey(config.keys.elevenlabs || '')
@@ -65,6 +69,7 @@ export default function SettingsPage() {
         console.error('Failed to load config:', err)
       }
     }
+
     load()
   }, [])
 
@@ -80,10 +85,11 @@ export default function SettingsPage() {
             maxTokens: parseInt(aiMaxTokens) || 1024
           },
           tts: {
-            provider: ttsProvider as 'elevenlabs' | 'webspeech' | 'mock',
+            provider: ttsProvider as 'elevenlabs' | 'webspeech' | 'mock' | 'piper',
             voiceId: ttsVoiceId,
             speed: 1.0,
-            language: ttsLanguage
+            language: ttsLanguage,
+            piperOptions
           },
           stt: {
             provider: sttProvider as 'whisper' | 'webspeech' | 'mock',
@@ -99,28 +105,29 @@ export default function SettingsPage() {
       })
 
       await loadConfig()
-      setSaveStatus('✅ Settings saved!')
+      setSaveStatus('Settings saved.')
       setTimeout(() => setSaveStatus(null), 2000)
     } catch (err) {
-      setSaveStatus(`❌ Error: ${(err as Error).message}`)
+      setSaveStatus(`Error: ${(err as Error).message}`)
     }
   }
 
   return (
     <div className="settings-page fade-in">
       {saveStatus && (
-        <div style={{
-          padding: '10px 16px',
-          borderRadius: 'var(--radius-md)',
-          background: saveStatus.startsWith('✅') ? 'rgba(52, 211, 153, 0.1)' : 'rgba(248, 113, 113, 0.1)',
-          border: `1px solid ${saveStatus.startsWith('✅') ? 'var(--success)' : 'var(--error)'}`,
-          fontSize: 14
-        }}>
+        <div
+          style={{
+            padding: '10px 16px',
+            borderRadius: 'var(--radius-md)',
+            background: saveStatus.startsWith('Error:') ? 'rgba(248, 113, 113, 0.1)' : 'rgba(52, 211, 153, 0.1)',
+            border: `1px solid ${saveStatus.startsWith('Error:') ? 'var(--error)' : 'var(--success)'}`,
+            fontSize: 14
+          }}
+        >
           {saveStatus}
         </div>
       )}
 
-      {/* AI Settings */}
       <div className="settings-section">
         <h3><Brain size={18} /> AI Provider</h3>
         <div className="settings-field">
@@ -157,12 +164,10 @@ export default function SettingsPage() {
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
               >
-                {/* ⚖️ Balance (recommended) */}
                 <option value="mistralai/mistral-small-3.1-24b-instruct">Mistral Small 3.1 (Recommended)</option>
                 <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
                 <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B</option>
                 <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
-                {/* 💪 Powerful (paid) */}
                 <option value="openai/gpt-4o">GPT-4o</option>
                 <option value="anthropic/claude-3.5-haiku">Claude 3.5 Haiku</option>
                 <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
@@ -223,7 +228,6 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* TTS Settings */}
       <div className="settings-section">
         <h3><Volume2 size={18} /> Text-to-Speech</h3>
         <div className="settings-field">
@@ -232,12 +236,36 @@ export default function SettingsPage() {
             id="tts-provider-select"
             className="settings-select"
             value={ttsProvider}
-            onChange={(e) => setTtsProvider(e.target.value)}
+            onChange={(e) => {
+              const newProvider = e.target.value
+              setTtsProvider(newProvider)
+              if (newProvider === 'elevenlabs') {
+                setTtsVoiceId('21m00Tcm4TlvDq8ikWAM')
+              } else if (newProvider === 'piper') {
+                setTtsVoiceId(DEFAULT_PIPER_VOICE_ID)
+              }
+            }}
           >
             <option value="mock">Mock (Silent)</option>
             <option value="elevenlabs">ElevenLabs</option>
+            <option value="piper">Piper (Offline)</option>
           </select>
         </div>
+
+        {ttsProvider === 'piper' && (
+          <div className="settings-field">
+            <label className="settings-label">Motor de voz (Offline)</label>
+            <select
+              className="settings-select"
+              value={PIPER_VOICES.some((voice) => voice.id === ttsVoiceId) ? ttsVoiceId : DEFAULT_PIPER_VOICE_ID}
+              onChange={(e) => setTtsVoiceId(e.target.value)}
+            >
+              {PIPER_VOICES.map((voice) => (
+                <option key={voice.id} value={voice.id}>{voice.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
         {ttsProvider === 'elevenlabs' && (
           <>
@@ -260,17 +288,17 @@ export default function SettingsPage() {
                 value={ttsVoiceId}
                 onChange={(e) => setTtsVoiceId(e.target.value)}
               >
-                {elevenlabsVoices.filter(v => v.category === 'cloned').length > 0 && (
+                {elevenlabsVoices.filter((v) => v.category === 'cloned').length > 0 && (
                   <optgroup label="Your Voices (Cloned)">
-                    {elevenlabsVoices.filter(v => v.category === 'cloned').map(v => (
-                      <option key={v.id} value={v.id}>{v.name} (cloned) ✅</option>
+                    {elevenlabsVoices.filter((v) => v.category === 'cloned').map((v) => (
+                      <option key={v.id} value={v.id}>{v.name} (cloned)</option>
                     ))}
                   </optgroup>
                 )}
                 <optgroup label="Default Voices (Premade)">
-                  {elevenlabsVoices.filter(v => v.category !== 'cloned').map(v => (
+                  {elevenlabsVoices.filter((v) => v.category !== 'cloned').map((v) => (
                     <option key={v.id} value={v.id}>
-                      {v.name} {v.category === 'premade' ? '(locked) 🔒' : ''}
+                      {v.name} {v.category === 'premade' ? '(locked)' : ''}
                     </option>
                   ))}
                 </optgroup>
@@ -285,24 +313,23 @@ export default function SettingsPage() {
               >
                 <option value="auto">Auto-detect</option>
                 <option value="en">English</option>
-                <option value="es">Español</option>
-                <option value="fr">Français</option>
-                <option value="de">Deutsch</option>
-                <option value="pt">Português</option>
-                <option value="it">Italiano</option>
-                <option value="ja">日本語</option>
-                <option value="ko">한국어</option>
-                <option value="zh">中文</option>
-                <option value="ar">العربية</option>
-                <option value="hi">हिन्दी</option>
-                <option value="pl">Polski</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="pt">Portuguese</option>
+                <option value="it">Italian</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="zh">Chinese</option>
+                <option value="ar">Arabic</option>
+                <option value="hi">Hindi</option>
+                <option value="pl">Polish</option>
               </select>
             </div>
           </>
         )}
       </div>
 
-      {/* STT Settings */}
       <div className="settings-section">
         <h3><Mic size={18} /> Speech-to-Text</h3>
         <div className="settings-field">
@@ -333,13 +360,8 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Actions */}
       <div style={{ display: 'flex', gap: 12 }}>
-        <button
-          id="save-settings-btn"
-          className="btn btn-primary"
-          onClick={handleSave}
-        >
+        <button id="save-settings-btn" className="btn btn-primary" onClick={handleSave}>
           <Save size={16} /> Save Settings
         </button>
         <button
@@ -348,9 +370,24 @@ export default function SettingsPage() {
             if (confirm('Reset all settings to defaults?')) {
               window.api.setConfig({
                 providers: {
-                  ai: { provider: 'mock', model: 'mistralai/mistral-small-3.1-24b-instruct', systemPrompt: 'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.', temperature: 0.7, maxTokens: 1024 },
-                  tts: { provider: 'mock', voiceId: '21m00Tcm4TlvDq8ikWAM', speed: 1.0, language: 'auto' },
-                  stt: { provider: 'mock', language: 'en' }
+                  ai: {
+                    provider: 'mock',
+                    model: 'mistralai/mistral-small-3.1-24b-instruct',
+                    systemPrompt: 'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.',
+                    temperature: 0.7,
+                    maxTokens: 1024
+                  },
+                  tts: {
+                    provider: 'mock',
+                    voiceId: '21m00Tcm4TlvDq8ikWAM',
+                    speed: 1.0,
+                    language: 'auto',
+                    piperOptions: DEFAULT_PIPER_OPTIONS
+                  },
+                  stt: {
+                    provider: 'mock',
+                    language: 'en'
+                  }
                 },
                 keys: {},
                 ui: { theme: 'dark', autoGenerate: false, setupCompleted: true }

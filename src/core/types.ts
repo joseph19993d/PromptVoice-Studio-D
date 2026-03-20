@@ -30,11 +30,24 @@ export interface AIGenerateOptions {
   maxTokens?: number
 }
 
+export interface PiperOptions {
+  lengthScale: number
+  noiseScale: number
+  noiseW: number
+}
+
+export const DEFAULT_PIPER_OPTIONS: PiperOptions = {
+  lengthScale: 1.0,
+  noiseScale: 0.667,
+  noiseW: 0.8
+}
+
 export interface TTSOptions {
   voiceId?: string
   speed?: number
   pitch?: number
   language?: string
+  piperOptions?: PiperOptions
 }
 
 export interface STTOptions {
@@ -51,6 +64,14 @@ export interface VoiceInfo {
   preview_url?: string
 }
 
+export const DEFAULT_PIPER_VOICE_ID = 'es_ES-davefx-medium.onnx'
+
+export const PIPER_VOICES: VoiceInfo[] = [
+  { id: 'es_ES-davefx-medium.onnx', name: 'Robotica (DaveFX Medium)', category: 'local', language: 'es' },
+  { id: 'es_ES-mls_10246-low.onnx', name: 'Natural (MLS)', category: 'local', language: 'es' },
+  { id: 'es_ES-carlfm-x_low.onnx', name: 'Masculina (CarlFM)', category: 'local', language: 'es' }
+]
+
 export interface HistoryEntry {
   id: string
   timestamp: number
@@ -64,7 +85,7 @@ export interface HistoryEntry {
 // ─── Configuration ─────────────────────────────
 
 export type AIProviderType = 'openrouter' | 'ollama' | 'mock'
-export type TTSProviderType = 'elevenlabs' | 'webspeech' | 'mock'
+export type TTSProviderType = 'elevenlabs' | 'webspeech' | 'mock' | 'piper'
 export type STTProviderType = 'whisper' | 'webspeech' | 'mock'
 
 export interface ProviderConfig {
@@ -80,6 +101,7 @@ export interface ProviderConfig {
     voiceId: string
     speed: number
     language: string
+    piperOptions: PiperOptions
   }
   stt: {
     provider: STTProviderType
@@ -119,7 +141,8 @@ export const DEFAULT_CONFIG: AppConfig = {
       provider: 'mock',
       voiceId: '21m00Tcm4TlvDq8ikWAM',
       speed: 1.0,
-      language: 'auto'
+      language: 'auto',
+      piperOptions: DEFAULT_PIPER_OPTIONS
     },
     stt: {
       provider: 'mock',

@@ -114,3 +114,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup and guidelines.
 ## 📄 License
 
 MIT — see [LICENSE](LICENSE) for details.
+
+## Piper Notes
+
+- The current Piper bootstrap flow is intentionally Windows-first. `npm run dev` and `npm run build` call `scripts/setup-piper.js`, which expects PowerShell and `resources/piper/piper.exe`.
+- The ElevenLabs to Piper fallback currently prioritizes availability over fidelity. If ElevenLabs fails and TTS falls back to Piper, the app does not yet forward the user's configured Piper-specific tuning values during that fallback path.

@@ -32,7 +32,7 @@ interface AppState {
   // Config
   config: {
     ai: { provider: string; model: string }
-    tts: { provider: string; voiceId: string; language: string }
+    tts: { provider: string; voiceId: string; language: string; piperOptions?: any } // using any here to prevent cyclic type imports, or proper type
     stt: { provider: string }
     setupCompleted: boolean
   } | null
@@ -101,10 +101,12 @@ export const useAppStore = create<AppState>((set, get) => ({
     try {
       const lang = config?.tts?.language
       const voiceId = config?.tts?.voiceId
+      const piperOptions = config?.tts?.piperOptions
 
       const audioData = await window.api.generateAudio(result, {
         ...(voiceId && { voiceId }),
-        ...(lang && lang !== 'auto' && { language: lang })
+        ...(lang && lang !== 'auto' && { language: lang }),
+        ...(piperOptions && { piperOptions })
       })
       set({ audioBase64: audioData })
     } catch (err) {

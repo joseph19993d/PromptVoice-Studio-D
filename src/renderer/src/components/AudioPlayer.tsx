@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Play, Pause, Download } from 'lucide-react'
 import { useAudioPlayer } from '../hooks/useAudioPlayer'
 import { useAppStore } from '../store/appStore'
@@ -14,10 +14,16 @@ export default function AudioPlayer() {
     formatTime
   } = useAudioPlayer()
 
+  const isInitialMount = useRef(true)
+
   useEffect(() => {
     if (audioBase64) {
-      loadAudio(audioBase64)
+      // Solo hacer auto-play si el audioBase64 cambia (ej. nueva petición).
+      // Si el componente apenas se está montando por cambio de tab, no hacer autoPlay.
+      const shouldAutoPlay = !isInitialMount.current
+      loadAudio(audioBase64, shouldAutoPlay)
     }
+    isInitialMount.current = false
   }, [audioBase64, loadAudio])
 
   const bars = useMemo(() => {
@@ -36,11 +42,18 @@ export default function AudioPlayer() {
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i)
     }
-    const blob = new Blob([bytes], { type: 'audio/mpeg' })
+    let mimeType = 'audio/mpeg'
+    let ext = 'mp3'
+    if (audioBase64.startsWith('UklGR')) {
+      mimeType = 'audio/wav'
+      ext = 'wav'
+    }
+
+    const blob = new Blob([bytes], { type: mimeType })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `promptvoice-${Date.now()}.mp3`
+    a.download = `promptvoice-${Date.now()}.${ext}`
     a.click()
     URL.revokeObjectURL(url)
   }
