@@ -1,0 +1,126 @@
+<mxfile host="Electron">
+    <diagram id="PromptVoice-Arch" name="Architecture">
+        <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1100" pageHeight="850" background="#FFFFFF" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                
+                <!-- Renderer Container -->
+                <mxCell id="renderer" value="Renderer Process (React + Vite + Zustand)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;startSize=30;fontColor=#000000;" vertex="1" parent="1">
+                    <mxGeometry x="40" y="40" width="300" height="600" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="ui_components" value="UI Components\n(App, Sidebar, Settings, AudioPlayer,\nPromptInput, MicButton)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="renderer">
+                    <mxGeometry x="20" y="60" width="260" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="zustand" value="Zustand App Store\n(State, Current Config, History,\nDebugLogs, Playback State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="renderer">
+                    <mxGeometry x="20" y="170" width="260" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="hooks" value="Custom React Hooks\n(useRecorder: MediaRecorder API)\n(useAudioPlayer: Audio Web API)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="renderer">
+                    <mxGeometry x="20" y="280" width="260" height="80" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="debug_view" value="Developer Debug View\n(Console interceptors: logs/errors)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#000000;" vertex="1" parent="renderer">
+                    <mxGeometry x="20" y="390" width="260" height="80" as="geometry"/>
+                </mxCell>
+
+                <!-- IPC Container -->
+                <mxCell id="ipc" value="IPC Bridge (Preload Context Isolation)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;startSize=30;fontColor=#000000;" vertex="1" parent="1">
+                    <mxGeometry x="380" y="40" width="220" height="600" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="window_api" value="window.api\n(Typed ElectronAPI objects\nexposed via contextBridge)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="ipc">
+                    <mxGeometry x="20" y="170" width="180" height="80" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="ipc_channels" value="IPC Channels\n- ai:generate, ai:models\n- tts:generate, tts:voices\n- stt:transcribe\n- config:get, vault:validate" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="ipc">
+                    <mxGeometry x="20" y="280" width="180" height="120" as="geometry"/>
+                </mxCell>
+
+                <!-- Main Container -->
+                <mxCell id="main" value="Main Process (Node.js + Electron Core)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontStyle=1;startSize=30;fontColor=#000000;" vertex="1" parent="1">
+                    <mxGeometry x="640" y="40" width="400" height="600" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="ipc_handlers" value="IPC Handlers\n(ai.ipc.ts, tts.ipc.ts, config.ipc.ts, vault.ipc.ts)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="main">
+                    <mxGeometry x="20" y="60" width="360" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="managers" value="Core Managers\n(AIManager, TTSManager, STTManager)\n* Switches providers dynamically based on Config" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="main">
+                    <mxGeometry x="20" y="150" width="360" height="80" as="geometry"/>
+                </mxCell>
+
+                <!-- Providers -->
+                <mxCell id="providers_group" value="Provider Abstraction Layer (Interfaces)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffffff;fontStyle=1;startSize=23;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="main">
+                    <mxGeometry x="20" y="260" width="360" height="120" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="ai_providers" value="AI Providers\n- OpenRouter (REST)\n- Ollama (Local API)\n- Mock" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#000000;strokeColor=#666666;align=center;" vertex="1" parent="providers_group">
+                    <mxGeometry x="10" y="35" width="110" height="70" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="tts_providers" value="TTS Providers\n- ElevenLabs (REST)\n- Mock" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#000000;strokeColor=#666666;align=center;" vertex="1" parent="providers_group">
+                    <mxGeometry x="125" y="35" width="110" height="70" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="stt_providers" value="STT Providers\n- Whisper API (HTTP)\n- Mock" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#000000;strokeColor=#666666;align=center;" vertex="1" parent="providers_group">
+                    <mxGeometry x="240" y="35" width="110" height="70" as="geometry"/>
+                </mxCell>
+
+                <!-- Storage -->
+                <mxCell id="storage_group" value="Persistent Storage Layer (Disk)" style="swimlane;whiteSpace=wrap;html=1;fillColor=#ffffff;fontStyle=1;startSize=23;fontColor=#000000;strokeColor=#333333;" vertex="1" parent="main">
+                    <mxGeometry x="20" y="410" width="360" height="150" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="config_service" value="ConfigService\nelectron-store (config.json)\nStores App state &amp; providers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f5f5f5;fontColor=#000000;strokeColor=#666666;" vertex="1" parent="storage_group">
+                    <mxGeometry x="10" y="35" width="160" height="60" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="key_vault" value="KeyVault (AES-256-GCM)\nuserData/vault/keys.vault.json\nEncrypts API Keys with Scrypt" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontStyle=1;fontColor=#000000;" vertex="1" parent="storage_group">
+                    <mxGeometry x="190" y="35" width="160" height="60" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="history_service" value="HistoryService\nuserData/history.json\nLogs prompts &amp; results" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;fontColor=#000000;strokeColor=#9673a6;" vertex="1" parent="storage_group">
+                    <mxGeometry x="100" y="105" width="160" height="40" as="geometry"/>
+                </mxCell>
+
+                <!-- Connections -->
+                <mxCell id="edge1" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="ui_components" target="zustand">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="edge2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="zustand" target="window_api">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+                
+                <mxCell id="edge3" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="window_api" target="ipc_channels">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="edge4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="ipc_channels" target="ipc_handlers">
+                    <mxGeometry relative="1" as="geometry">
+                        <Array as="points">
+                            <mxPoint x="640" y="340"/>
+                            <mxPoint x="640" y="90"/>
+                        </Array>
+                    </mxGeometry>
+                </mxCell>
+
+                <mxCell id="edge5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="ipc_handlers" target="managers">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="edge6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="managers" target="providers_group">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+                <mxCell id="edge7" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;exitX=0.5;exitY=1;entryX=0.5;entryY=0;strokeColor=#333333;fontColor=#000000;strokeWidth=2;" edge="1" parent="1" source="providers_group" target="storage_group">
+                    <mxGeometry relative="1" as="geometry"/>
+                </mxCell>
+
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>

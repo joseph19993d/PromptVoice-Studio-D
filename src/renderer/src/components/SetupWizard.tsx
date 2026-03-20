@@ -50,8 +50,8 @@ export default function SetupWizard() {
           providers: {
             ai: {
               provider: aiKey ? 'openrouter' : 'mock',
-              model: 'mistralai/mistral-7b-instruct',
-              systemPrompt: 'You are a helpful creative assistant.',
+              model: 'mistralai/mistral-small-3.1-24b-instruct',
+              systemPrompt: 'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.',
               temperature: 0.7,
               maxTokens: 1024
             },

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 
-export type Page = 'home' | 'settings'
+export type Page = 'home' | 'settings' | 'debug'
 
 interface AppState {
   // Navigation
@@ -13,6 +13,7 @@ interface AppState {
 
   // Generation
   result: string
+  setResult: (text: string) => void
   isGenerating: boolean
   generateError: string | null
   generate: () => Promise<void>
@@ -40,6 +41,15 @@ interface AppState {
   // Setup wizard
   showWizard: boolean
   setShowWizard: (show: boolean) => void
+
+  // Global Errors (Toasts)
+  appError: string | null
+  setAppError: (error: string | null) => void
+
+  // Debug
+  debugLogs: Array<{ time: string; level: string; message: string }>
+  addDebugLog: (level: string, message: string) => void
+  clearDebugLogs: () => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -53,6 +63,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Generation
   result: '',
+  setResult: (text) => set({ result: text }),
   isGenerating: false,
   generateError: null,
 
@@ -92,6 +103,8 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ audioBase64: audioData })
     } catch (err) {
       console.error('TTS error:', err)
+      set({ appError: `TTS Error: ${(err as Error).message}` })
+      setTimeout(() => set({ appError: null }), 5000)
     }
   },
 
@@ -120,5 +133,16 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   // Setup wizard
   showWizard: false,
-  setShowWizard: (show) => set({ showWizard: show })
+  setShowWizard: (show) => set({ showWizard: show }),
+
+  // Global Errors
+  appError: null,
+  setAppError: (error) => set({ appError: error }),
+
+  // Debug
+  debugLogs: [],
+  addDebugLog: (level, message) => set((state) => ({
+    debugLogs: [...state.debugLogs, { time: new Date().toISOString(), level, message }]
+  })),
+  clearDebugLogs: () => set({ debugLogs: [] })
 }))

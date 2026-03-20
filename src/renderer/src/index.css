@@ -106,6 +106,16 @@ body {
   padding-top: var(--titlebar-height);
 }
 
+.titlebar-drag-region {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--titlebar-height);
+  -webkit-app-region: drag;
+  z-index: 9999;
+}
+
 /* ─── Sidebar ───────────────────────────────── */
 .sidebar {
   width: var(--sidebar-width);
@@ -434,6 +444,27 @@ body {
   line-height: 1.7;
   color: var(--text-primary);
   white-space: pre-wrap;
+}
+
+.result-editable {
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 8px;
+  resize: none;
+  outline: none;
+  font-family: var(--font-family);
+  cursor: text;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.result-editable:hover {
+  border-color: var(--border-subtle);
+}
+
+.result-editable:focus {
+  border-color: var(--border-accent);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .result-empty {

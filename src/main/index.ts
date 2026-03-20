@@ -9,7 +9,33 @@ import { registerAIHandlers } from './ipc/ai.ipc'
 import { registerTTSHandlers } from './ipc/tts.ipc'
 import { registerSTTHandlers } from './ipc/stt.ipc'
 import { registerConfigHandlers } from './ipc/config.ipc'
+import { registerVaultHandlers } from './ipc/vault.ipc'
 import { AppConfig } from '../core/types'
+
+// ─── Debug Log Forwarding ──────────────────────
+
+const originalConsoleLog = console.log
+const originalConsoleError = console.error
+
+function sendLogToRenderer(level: string, ...args: any[]): void {
+  // Only forward if debug view is enabled via env
+  if (process.env.VITE_ENABLE_DEBUG_VIEW !== 'true') return;
+  
+  const msg = args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' ')
+  const win = BrowserWindow.getAllWindows()[0]
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('debug:log', { time: new Date().toISOString(), level, message: msg })
+  }
+}
+
+console.log = (...args) => {
+  originalConsoleLog(...args)
+  sendLogToRenderer('info', ...args)
+}
+console.error = (...args) => {
+  originalConsoleError(...args)
+  sendLogToRenderer('error', ...args)
+}
 
 // ─── Managers (initialized from saved config) ──
 
@@ -94,6 +120,9 @@ app.whenReady().then(() => {
   registerAIHandlers(aiManager)
   registerTTSHandlers(ttsManager)
   registerSTTHandlers(sttManager)
+  registerVaultHandlers((updatedConfig) => {
+    initializeManagers(updatedConfig)
+  })
   registerConfigHandlers((updatedConfig) => {
     // Reinitialize managers when config changes
     initializeManagers(updatedConfig)

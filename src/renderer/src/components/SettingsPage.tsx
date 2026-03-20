@@ -6,8 +6,8 @@ export default function SettingsPage() {
   const { loadConfig } = useAppStore()
 
   const [aiProvider, setAiProvider] = useState('mock')
-  const [aiModel, setAiModel] = useState('mistralai/mistral-7b-instruct')
-  const [aiSystemPrompt, setAiSystemPrompt] = useState('You are a helpful creative assistant.')
+  const [aiModel, setAiModel] = useState('mistralai/mistral-small-3.1-24b-instruct')
+  const [aiSystemPrompt, setAiSystemPrompt] = useState('You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.')
   const [aiTemperature, setAiTemperature] = useState('0.7')
   const [aiMaxTokens, setAiMaxTokens] = useState('1024')
 
@@ -135,12 +135,16 @@ export default function SettingsPage() {
                 value={aiModel}
                 onChange={(e) => setAiModel(e.target.value)}
               >
-                <option value="mistralai/mistral-7b-instruct">Mistral 7B (Free)</option>
-                <option value="meta-llama/llama-3.1-8b-instruct:free">Llama 3.1 8B (Free)</option>
-                <option value="google/gemma-2-9b-it:free">Gemma 2 9B (Free)</option>
-                <option value="openai/gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                {/* ⚖️ Balance (recommended) */}
+                <option value="mistralai/mistral-small-3.1-24b-instruct">Mistral Small 3.1 (Recommended)</option>
                 <option value="openai/gpt-4o-mini">GPT-4o Mini</option>
-                <option value="anthropic/claude-3-haiku">Claude 3 Haiku</option>
+                <option value="meta-llama/llama-3.1-8b-instruct">Llama 3.1 8B</option>
+                <option value="google/gemini-2.0-flash-001">Gemini 2.0 Flash</option>
+                {/* 💪 Powerful (paid) */}
+                <option value="openai/gpt-4o">GPT-4o</option>
+                <option value="anthropic/claude-3.5-haiku">Claude 3.5 Haiku</option>
+                <option value="meta-llama/llama-3.3-70b-instruct">Llama 3.3 70B</option>
+                <option value="mistralai/mixtral-8x7b-instruct">Mixtral 8x7B</option>
               </select>
             </div>
           </>
@@ -291,7 +295,7 @@ export default function SettingsPage() {
             if (confirm('Reset all settings to defaults?')) {
               window.api.setConfig({
                 providers: {
-                  ai: { provider: 'mock', model: 'mistralai/mistral-7b-instruct', systemPrompt: 'You are a helpful creative assistant.', temperature: 0.7, maxTokens: 1024 },
+                  ai: { provider: 'mock', model: 'mistralai/mistral-small-3.1-24b-instruct', systemPrompt: 'You are a helpful, knowledgeable assistant. Respond clearly and concisely in the same language the user writes in. Use markdown formatting when appropriate.', temperature: 0.7, maxTokens: 1024 },
                   tts: { provider: 'mock', voiceId: 'default', speed: 1.0 },
                   stt: { provider: 'mock', language: 'en' }
                 },

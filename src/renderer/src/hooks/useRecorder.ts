@@ -6,7 +6,7 @@ export function useRecorder() {
   const chunksRef = useRef<Blob[]>([])
   const streamRef = useRef<MediaStream | null>(null)
 
-  const { isRecording, setIsRecording, setPrompt } = useAppStore()
+  const { isRecording, setIsRecording, setPrompt, setAppError } = useAppStore()
 
   const start = useCallback(async () => {
     try {
@@ -47,6 +47,8 @@ export function useRecorder() {
           setPrompt(transcription)
         } catch (err) {
           console.error('Transcription error:', err)
+          setAppError(`Mic Error: ${(err as Error).message}`)
+          setTimeout(() => setAppError(null), 5000)
         }
       }
 
@@ -55,8 +57,10 @@ export function useRecorder() {
       setIsRecording(true)
     } catch (err) {
       console.error('Microphone access error:', err)
+      setAppError(`Mic Access Denied: ${(err as Error).message}`)
+      setTimeout(() => setAppError(null), 5000)
     }
-  }, [setIsRecording, setPrompt])
+  }, [setIsRecording, setPrompt, setAppError])
 
   const stop = useCallback(() => {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {

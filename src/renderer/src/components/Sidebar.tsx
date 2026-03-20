@@ -1,4 +1,4 @@
-import { Home, Settings, Mic, Brain, Volume2 } from 'lucide-react'
+import { Home, Settings, Mic, Brain, Volume2, Terminal } from 'lucide-react'
 import { useAppStore, Page } from '../store/appStore'
 
 export default function Sidebar() {
@@ -8,6 +8,10 @@ export default function Sidebar() {
     { id: 'home', label: 'Studio', icon: Home },
     { id: 'settings', label: 'Settings', icon: Settings }
   ]
+
+  if (import.meta.env.VITE_ENABLE_DEBUG_VIEW === 'true') {
+    navItems.push({ id: 'debug', label: 'Dev View', icon: Terminal as any })
+  }
 
   return (
     <aside className="sidebar">

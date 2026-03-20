@@ -68,7 +68,12 @@ const api = {
     invokeIPC(IPC_CHANNELS.HISTORY_ADD, entry),
 
   clearHistory: () =>
-    invokeIPC<void>(IPC_CHANNELS.HISTORY_CLEAR)
+    invokeIPC<void>(IPC_CHANNELS.HISTORY_CLEAR),
+
+  // Debug
+  onDebugLog: (callback: (log: { time: string; level: string; message: string }) => void) => {
+    ipcRenderer.on('debug:log', (_event, log) => callback(log))
+  }
 }
 
 contextBridge.exposeInMainWorld('api', api)

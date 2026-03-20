@@ -17,17 +17,25 @@ export class OpenRouterProvider implements IAIProvider {
   }
 
   async generateText(prompt: string, options?: AIGenerateOptions): Promise<string> {
-    const model = options?.model || 'mistralai/mistral-7b-instruct'
+    const model = options?.model || 'mistralai/mistral-small-3.1-24b-instruct'
     const temperature = options?.temperature ?? 0.7
     const maxTokens = options?.maxTokens ?? 1024
 
     const messages: Array<{ role: string; content: string }> = []
 
-    if (options?.systemPrompt) {
-      messages.push({ role: 'system', content: options.systemPrompt })
-    }
+    const systemPrompt = options?.systemPrompt || 'You are a helpful, knowledgeable assistant. Respond clearly and concisely. Use markdown formatting when appropriate.'
+    messages.push({ role: 'system', content: systemPrompt })
 
     messages.push({ role: 'user', content: prompt })
+
+    const payload = {
+      model,
+      messages,
+      temperature,
+      max_tokens: maxTokens
+    }
+
+    console.log(`[OpenRouter] Sending request for model: ${model}`, payload)
 
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
@@ -37,31 +45,45 @@ export class OpenRouterProvider implements IAIProvider {
         'HTTP-Referer': 'https://promptvoice-studio.app',
         'X-Title': 'PromptVoice Studio'
       },
-      body: JSON.stringify({
-        model,
-        messages,
-        temperature,
-        max_tokens: maxTokens
-      })
+      body: JSON.stringify(payload)
     })
 
     if (!response.ok) {
       const errorData = await response.text()
+      console.error(`[OpenRouter] API Error ${response.status}:`, errorData)
+
+      if (response.status === 404) {
+        throw new Error(
+          `Model "${model}" not found on OpenRouter. It may have been removed or renamed. Please select a different model in Settings.`
+        )
+      }
+
+      if (response.status === 429) {
+        throw new Error(
+          'Rate limit exceeded. Please wait a moment before trying again, or switch to a different model.'
+        )
+      }
+
       throw new Error(`OpenRouter API error (${response.status}): ${errorData}`)
     }
 
     const data = (await response.json()) as OpenRouterResponse
+    console.log(`[OpenRouter] Received response successfully.`, data)
     return data.choices?.[0]?.message?.content || 'No response generated.'
   }
 
   async listModels(): Promise<string[]> {
     return [
-      'mistralai/mistral-7b-instruct',
-      'meta-llama/llama-3.1-8b-instruct:free',
-      'google/gemma-2-9b-it:free',
-      'openai/gpt-3.5-turbo',
+      // ⚖️ Balance (recommended)
+      'mistralai/mistral-small-3.1-24b-instruct',
       'openai/gpt-4o-mini',
-      'anthropic/claude-3-haiku'
+      'meta-llama/llama-3.1-8b-instruct',
+      'google/gemini-2.0-flash-001',
+      // 💪 Powerful (paid)
+      'openai/gpt-4o',
+      'anthropic/claude-3.5-haiku',
+      'meta-llama/llama-3.3-70b-instruct',
+      'mistralai/mixtral-8x7b-instruct'
     ]
   }
 }

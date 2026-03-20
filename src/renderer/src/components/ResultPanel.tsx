@@ -3,7 +3,7 @@ import { useAppStore } from '../store/appStore'
 import AudioPlayer from './AudioPlayer'
 
 export default function ResultPanel() {
-  const { result, isGenerating, generateAndSpeak } = useAppStore()
+  const { result, setResult, isGenerating, generateAndSpeak } = useAppStore()
 
   const handleCopy = async () => {
     if (result) {
@@ -38,7 +38,13 @@ export default function ResultPanel() {
       </div>
 
       {result ? (
-        <div className="result-text fade-in">{result}</div>
+        <textarea
+          id="result-textarea"
+          className="result-text result-editable fade-in"
+          value={result}
+          onChange={(e) => setResult(e.target.value)}
+          spellCheck={false}
+        />
       ) : (
         <div className="result-empty">
           <div className="result-empty-icon">
